@@ -56,9 +56,7 @@ The life event cascade becomes a **composition problem** — one that any suffic
 
 ---
 
-## What this means for Africa
-
-Africa is not catching up. Africa is choosing.
+## What this means for adopter country?
 
 Several countries are deploying foundational identity and digital payment infrastructure right now — before legacy systems have calcified, before path dependencies have locked in the portal model.
 
@@ -79,8 +77,6 @@ Not as a distant aspiration — but as a concrete, achievable next state for gov
 - Type their data contracts
 - Make their flows explicit
 - And share that knowledge as open infrastructure
-
-This is what it means to build DPI that is truly public: infrastructure that any government, any agent, and any citizen can rely on — not because it was promised, but because it was specified.
 
 ---
 
