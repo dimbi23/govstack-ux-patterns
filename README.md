@@ -37,6 +37,14 @@ This is the **AI-readiness layer for GovStack UX/UI service patterns**.
     └── 10-other-resources.md
 ```
 
+## Vision
+
+The life event scenario — a single event triggering coordinated, automatic government action across civil registry, health, social protection, tax, and education — is the horizon this specification is pointed at.
+
+→ [Read: The Life Event Horizon](docs/11-vision.md)
+
+---
+
 ## Quick start
 
 **For AI agents:** Load `schema/service-pattern.schema.json` and the relevant pattern files from `patterns/`. Use `use_when` arrays for pattern selection, `flow` for traversal, and `inputs`/`outputs` for data contracts.
@@ -56,14 +64,6 @@ This is the **AI-readiness layer for GovStack UX/UI service patterns**.
 ## Contributing
 
 See `docs/` for the full specification. Contributions follow the GovStack Building Block contribution guidelines.
-
-## Vision
-
-The life event scenario — a single event triggering coordinated, automatic government action across civil registry, health, social protection, tax, and education — is the horizon this specification is pointed at.
-
-→ [Read: The Life Event Horizon](docs/11-vision.md)
-
----
 
 ## Related resources
 
