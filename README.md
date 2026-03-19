@@ -57,6 +57,14 @@ This is the **AI-readiness layer for GovStack UX/UI service patterns**.
 
 See `docs/` for the full specification. Contributions follow the GovStack Building Block contribution guidelines.
 
+## Vision
+
+The life event scenario — a single event triggering coordinated, automatic government action across civil registry, health, social protection, tax, and education — is the horizon this specification is pointed at.
+
+→ [Read: The Life Event Horizon](docs/11-vision.md)
+
+---
+
 ## Related resources
 
 - [GovStack AI Readiness Guide](https://specs.govstack.global/ai-readiness)
