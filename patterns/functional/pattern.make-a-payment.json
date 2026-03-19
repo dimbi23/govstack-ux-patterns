@@ -1,0 +1,232 @@
+{
+  "id": "pattern.make-a-payment",
+  "version": "1.0.0",
+  "kind": "FunctionalPattern",
+  "status": "stable",
+  "label": "Make a payment",
+  "description": "Enable users to pay for a government service securely and with confidence, with full handling of success, pending, and failure states.",
+  "source_url": "https://specs.govstack.global/service-patterns/2.-functional-patterns/make-a-payment",
+  "tags": ["payment", "finance", "government", "dpi"],
+
+  "use_when": [
+    "A service requires payment before completion or progression.",
+    "Fees, fines, or charges are due to a government entity.",
+    "Payment may be made online, in person, or on behalf of someone else."
+  ],
+
+  "do_not_use_when": [
+    "Internal accounting or billing systems.",
+    "Eligibility or fee calculation logic only — no actual transaction."
+  ],
+
+  "building_blocks": [
+    { "id": "bb.payment", "role": "primary" },
+    { "id": "bb.messaging", "role": "supporting", "notes": "Used to send payment confirmation and receipts." },
+    { "id": "bb.identity", "role": "conditional", "notes": "Required if payment must be linked to a verified user identity." }
+  ],
+
+  "related_patterns": [
+    { "id": "pattern.authenticate" },
+    { "id": "pattern.check-eligibility" }
+  ],
+
+  "inputs": [
+    {
+      "id": "service.fee",
+      "type": "number",
+      "label": "Fee amount",
+      "description": "Calculated fee amount passed from the service context.",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "service.currency",
+      "type": "string",
+      "label": "Currency code",
+      "description": "ISO 4217 currency code (e.g. 'USD', 'MGA', 'KES').",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "user.id",
+      "type": "string",
+      "label": "User reference",
+      "description": "Authenticated user identifier, if available.",
+      "required": false,
+      "sensitive": true
+    }
+  ],
+
+  "outputs": [
+    {
+      "id": "payment.status",
+      "type": "enum",
+      "values": ["success", "pending", "failed", "cancelled", "expired"],
+      "label": "Payment status",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "payment.reference",
+      "type": "string",
+      "label": "Payment reference number",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "payment.timestamp",
+      "type": "datetime",
+      "label": "Transaction timestamp",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "payment.receipt_url",
+      "type": "string",
+      "label": "Receipt URL or document reference",
+      "required": false,
+      "sensitive": false
+    }
+  ],
+
+  "steps": [
+    {
+      "id": "s1",
+      "label": "Understand the payment requirement",
+      "description": "Explain what the payment is for, the amount, any deadline, and who can pay.",
+      "custom": true,
+      "optional": false
+    },
+    {
+      "id": "s2",
+      "label": "Understand options and reductions",
+      "ref": { "id": "step.ask-a-question" },
+      "description": "If applicable: exemptions, instalments, pay now vs later, refund conditions.",
+      "optional": true
+    },
+    {
+      "id": "s3",
+      "label": "Choose how to pay",
+      "ref": { "id": "step.ask-a-question" },
+      "description": "User selects a payment method.",
+      "optional": false,
+      "outputs": [
+        {
+          "id": "payment.method",
+          "type": "enum",
+          "values": ["card", "bank-transfer", "digital-wallet", "direct-debit", "invoice", "in-person", "voucher"],
+          "label": "Selected payment method",
+          "required": true,
+          "sensitive": false
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "label": "Review payment details",
+      "ref": { "id": "step.check-answers", "version": "1.0.0" },
+      "description": "User reviews amount, currency, recipient, and selected method before authorising.",
+      "optional": false
+    },
+    {
+      "id": "s5",
+      "label": "Authorise payment",
+      "description": "User authorises the payment via the selected method. Service hands off to payment provider.",
+      "custom": true,
+      "optional": false,
+      "channel_constraints": ["digital", "mobile", "kiosk"]
+    },
+    {
+      "id": "s5-assisted",
+      "label": "Assisted payment authorisation",
+      "description": "Agent or officer processes payment on behalf of the user.",
+      "custom": true,
+      "optional": true,
+      "channel_constraints": ["assisted", "offline"]
+    },
+    {
+      "id": "s6",
+      "label": "Payment outcome",
+      "ref": { "id": "step.outcome" },
+      "description": "Display result: success, pending, or failed. Show reference number and next steps.",
+      "optional": false
+    },
+    {
+      "id": "s7",
+      "label": "Send confirmation notification",
+      "ref": { "id": "step.send-a-notification" },
+      "description": "Send receipt or status update via SMS, email, or in-app notification.",
+      "optional": true
+    }
+  ],
+
+  "flow": [
+    { "from": "START", "to": "s1" },
+    {
+      "from": "s1", "to": "s2",
+      "condition": { "label": "Fee options applicable", "expression": "service.has_fee_options == true" }
+    },
+    { "from": "s1", "to": "s3" },
+    { "from": "s2", "to": "s3" },
+    { "from": "s3", "to": "s4" },
+    {
+      "from": "s4", "to": "s5",
+      "condition": { "label": "Digital or kiosk channel", "expression": "channel in ['digital', 'mobile', 'kiosk']" }
+    },
+    {
+      "from": "s4", "to": "s5-assisted",
+      "condition": { "label": "Assisted or offline channel", "expression": "channel in ['assisted', 'offline']" }
+    },
+    { "from": "s5", "to": "s6" },
+    { "from": "s5-assisted", "to": "s6" },
+    {
+      "from": "s6", "to": "s7",
+      "condition": { "label": "Payment succeeded or pending", "expression": "payment.status in ['success', 'pending']" }
+    },
+    {
+      "from": "s6", "to": "s3",
+      "condition": { "label": "Failed — retry with different method", "expression": "payment.status in ['failed', 'cancelled', 'expired'] and user.wants_retry == true" }
+    },
+    { "from": "s7", "to": "END" },
+    {
+      "from": "s6", "to": "END",
+      "condition": { "label": "No retry", "expression": "payment.status == 'failed' and user.wants_retry == false" }
+    }
+  ],
+
+  "ux_considerations": [
+    {
+      "text": "Users must be able to trust and verify that a payment request is legitimate. Show issuing authority clearly.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Always offer at least one non-digital payment route (in-person, kiosk, or assisted).",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Support save-and-return where the user may need to leave and come back before completing payment.",
+      "applies_to": ["digital", "mobile"],
+      "severity": "should"
+    }
+  ],
+
+  "technical_notes": [
+    {
+      "text": "Payment operations must be idempotent — retrying must not result in double-charging.",
+      "category": "integration",
+      "severity": "must"
+    },
+    {
+      "text": "All payment events (initiation, authorisation, outcome) must be logged with user reference and timestamp.",
+      "category": "audit",
+      "severity": "must"
+    },
+    {
+      "text": "Pending status must trigger an async notification when the status resolves.",
+      "category": "integration",
+      "severity": "should"
+    }
+  ]
+}

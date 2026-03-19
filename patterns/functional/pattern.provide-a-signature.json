@@ -1,0 +1,143 @@
+{
+  "id": "pattern.provide-a-signature",
+  "version": "1.0.0",
+  "kind": "FunctionalPattern",
+  "status": "stable",
+  "label": "Provide a signature",
+  "description": "Capture a trusted, auditable signature so a service can confirm who signed, what they signed, and when.",
+  "source_url": "https://specs.govstack.global/service-patterns/2.-functional-patterns/provide-a-signature",
+  "tags": ["signature", "esignature", "legal"],
+  "use_when": [
+    "The outcome is legally or procedurally significant, or fraud prevention is essential.",
+    "The service must produce a verifiable record of agreement or approval.",
+    "Multiple signers, roles, or asynchronous signing are involved."
+  ],
+  "do_not_use_when": [
+    "A simple confirmation or acknowledgement is sufficient.",
+    "Signing is not required for the decision — use information collection and normal confirmation instead."
+  ],
+  "building_blocks": [
+    { "id": "bb.esignature", "role": "primary" },
+    { "id": "bb.identity", "role": "supporting" },
+    { "id": "bb.information-mediator", "role": "supporting" },
+    { "id": "bb.messaging", "role": "optional" }
+  ],
+  "related_patterns": [
+    { "id": "pattern.authenticate" },
+    { "id": "pattern.present-a-credential" }
+  ],
+  "outputs": [
+    {
+      "id": "signature.status",
+      "type": "enum",
+      "values": ["signed", "pending", "failed", "declined", "expired"],
+      "label": "Signature status",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "signature.reference",
+      "type": "string",
+      "label": "Signature audit reference",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "signature.timestamp",
+      "type": "datetime",
+      "label": "Signing timestamp",
+      "required": false,
+      "sensitive": false
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "label": "Verify identity and authorise to sign (optional)",
+      "ref": { "id": "pattern.authenticate" },
+      "description": "Confirm the user is the intended signatory and is authorised to sign in the chosen role.",
+      "optional": true
+    },
+    {
+      "id": "s2",
+      "label": "Review what will be signed",
+      "ref": { "id": "step.check-answers" },
+      "description": "Show clear, human-readable content and a summary of consequences. User must be able to confirm or cancel.",
+      "optional": false
+    },
+    {
+      "id": "s3",
+      "label": "Choose signature method or role (if applicable)",
+      "ref": { "id": "step.ask-a-question" },
+      "description": "If multiple signing methods or roles are available, let the user select.",
+      "optional": true
+    },
+    {
+      "id": "s4",
+      "label": "Apply eSignature",
+      "custom": true,
+      "description": "Service applies the signature via the eSignature Building Block.",
+      "optional": false
+    },
+    {
+      "id": "s5",
+      "label": "Return outcome and confirmations",
+      "ref": { "id": "step.outcome" },
+      "description": "Show status, audit reference, and what happens next.",
+      "optional": false
+    },
+    {
+      "id": "s6",
+      "label": "Send confirmation notification",
+      "ref": { "id": "step.send-a-notification" },
+      "description": "Send confirmations to signatory and document owner or requester if different.",
+      "optional": true
+    }
+  ],
+  "flow": [
+    { "from": "START", "to": "s1" },
+    { "from": "s1", "to": "s2" },
+    {
+      "from": "s2", "to": "s3",
+      "condition": { "label": "Multiple methods or roles available", "expression": "signature.has_method_choice == true" }
+    },
+    { "from": "s2", "to": "s4" },
+    { "from": "s3", "to": "s4" },
+    { "from": "s4", "to": "s5" },
+    {
+      "from": "s5", "to": "s6",
+      "condition": { "label": "Notification needed", "expression": "signature.status in ['signed', 'pending']" }
+    },
+    { "from": "s5", "to": "END" },
+    { "from": "s6", "to": "END" }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Enable save-and-return to sign later, with reminder notifications and expiry where relevant.",
+      "applies_to": ["digital", "mobile"],
+      "severity": "should"
+    },
+    {
+      "text": "Signing must be usable with assistive technology such as screen readers.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Where eSignature is not possible, offer assisted or alternative ways to complete this part of the service.",
+      "applies_to": ["all"],
+      "severity": "must"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "All signature events must be logged with user reference, document reference, timestamp, and method.",
+      "category": "audit",
+      "severity": "must"
+    },
+    {
+      "text": "Signature operations must be protected via Information Mediation when integrating with external systems.",
+      "category": "security",
+      "severity": "must"
+    }
+  ]
+}

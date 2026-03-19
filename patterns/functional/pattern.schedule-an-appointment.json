@@ -1,0 +1,151 @@
+{
+  "id": "pattern.schedule-an-appointment",
+  "version": "1.0.0",
+  "kind": "FunctionalPattern",
+  "status": "stable",
+  "label": "Schedule an appointment",
+  "description": "Schedule, manage, and fulfil time-bound service interactions such as appointments, visits, or sessions.",
+  "source_url": "https://specs.govstack.global/service-patterns/2.-functional-patterns/schedule-an-appointment",
+  "tags": ["scheduling", "appointment", "booking"],
+  "use_when": [
+    "A service requires a time-bound in-person or virtual interaction.",
+    "Users need to select from available slots with constraints.",
+    "Booking confirmation, reminders, and change/cancel flows are needed."
+  ],
+  "do_not_use_when": [
+    "The service requires no time-bound interaction.",
+    "Scheduling is handled entirely by a third-party system with no GovStack integration."
+  ],
+  "building_blocks": [
+    { "id": "bb.scheduler", "role": "primary" },
+    { "id": "bb.messaging", "role": "supporting" }
+  ],
+  "related_patterns": [
+    { "id": "pattern.check-eligibility" },
+    { "id": "pattern.make-a-payment" }
+  ],
+  "outputs": [
+    {
+      "id": "booking.reference",
+      "type": "string",
+      "label": "Booking reference",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "booking.status",
+      "type": "enum",
+      "values": ["confirmed", "pending", "cancelled", "rescheduled", "completed"],
+      "label": "Booking status",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "booking.datetime",
+      "type": "datetime",
+      "label": "Confirmed appointment date and time",
+      "required": false,
+      "sensitive": false
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "label": "Check eligibility",
+      "ref": { "id": "pattern.check-eligibility" },
+      "optional": true
+    },
+    {
+      "id": "s2",
+      "label": "Ask for additional information",
+      "ref": { "id": "step.ask-a-question" },
+      "description": "Collect minimum info: appointment type, preferences, accessibility needs.",
+      "optional": true
+    },
+    {
+      "id": "s3",
+      "label": "Select available option",
+      "ref": { "id": "step.ask-a-question" },
+      "description": "Present valid slots and options for the user to choose.",
+      "optional": false
+    },
+    {
+      "id": "s4",
+      "label": "Take payment (if required)",
+      "ref": { "id": "pattern.make-a-payment" },
+      "optional": true
+    },
+    {
+      "id": "s5",
+      "label": "Review and submit",
+      "ref": { "id": "step.check-answers" },
+      "optional": false
+    },
+    {
+      "id": "s6",
+      "label": "Confirm booking",
+      "ref": { "id": "step.outcome" },
+      "optional": false
+    },
+    {
+      "id": "s7",
+      "label": "Send confirmation notification",
+      "ref": { "id": "step.send-a-notification" },
+      "optional": false
+    },
+    {
+      "id": "s8",
+      "label": "Manage booking",
+      "custom": true,
+      "description": "Allow user to view, reschedule, or cancel the booking.",
+      "optional": true
+    }
+  ],
+  "flow": [
+    { "from": "START", "to": "s1" },
+    { "from": "s1", "to": "s2" },
+    { "from": "s2", "to": "s3" },
+    {
+      "from": "s3", "to": "s4",
+      "condition": { "label": "Payment required", "expression": "booking.payment_required == true" }
+    },
+    { "from": "s3", "to": "s5" },
+    { "from": "s4", "to": "s5" },
+    { "from": "s5", "to": "s6" },
+    { "from": "s6", "to": "s7" },
+    { "from": "s7", "to": "s8" },
+    {
+      "from": "s8", "to": "s3",
+      "condition": { "label": "User rescheduling", "expression": "booking.action == 'reschedule'" }
+    },
+    {
+      "from": "s8", "to": "s6",
+      "condition": { "label": "User cancelling", "expression": "booking.action == 'cancel'" }
+    },
+    { "from": "s8", "to": "END" }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Let users view availability before authentication unless identity is required for valid options.",
+      "applies_to": ["all"],
+      "severity": "should"
+    },
+    {
+      "text": "Send reminders before the appointment. Support rescheduling and cancellation with clear notification.",
+      "applies_to": ["all"],
+      "severity": "must"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Slot availability must be fetched in real-time to prevent double-booking.",
+      "category": "integration",
+      "severity": "must"
+    },
+    {
+      "text": "Booking state must support all lifecycle transitions: confirmed → rescheduled → cancelled → completed.",
+      "category": "data",
+      "severity": "must"
+    }
+  ]
+}

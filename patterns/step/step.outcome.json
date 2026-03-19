@@ -1,0 +1,86 @@
+{
+  "id": "step.outcome",
+  "version": "1.0.0",
+  "kind": "StepPattern",
+  "status": "stable",
+  "label": "Outcome",
+  "description": "Provide users with confirmation that they have successfully completed their intended task. Users need to know their action has been received and processed, and what will happen next.",
+  "source_url": "https://specs.govstack.global/service-patterns/3.-step-patterns/outcome",
+  "tags": ["confirmation", "completion", "result"],
+  "purpose": "Close the interaction clearly, confirm what happened, and tell the user what to do or expect next.",
+  "use_when": [
+    "After submitting a form, completing an application, or confirming a decision.",
+    "When the user has successfully completed their intended task."
+  ],
+  "do_not_use_when": [
+    "The user still needs to provide more information in a later section.",
+    "The task has failed or encountered an error — use standard service error pages instead."
+  ],
+  "inputs": [
+    {
+      "id": "outcome.status",
+      "type": "enum",
+      "values": ["success", "pending", "failed", "partial"],
+      "label": "Outcome status",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "outcome.reference",
+      "type": "string",
+      "label": "Reference number",
+      "description": "Case, booking, or application reference for follow-up.",
+      "required": false,
+      "sensitive": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "outcome.acknowledged",
+      "type": "boolean",
+      "label": "User acknowledged outcome",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Clearly state that the user's task has been successfully completed.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Explain next steps, expected timeframes, and whether the user needs to take further action.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Provide a clear way for users to get help or more information.",
+      "applies_to": ["all"],
+      "severity": "should"
+    },
+    {
+      "text": "Do not display unnecessary personal or sensitive information.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Mask or partially hide identifiers where full details are not required.",
+      "applies_to": ["all"],
+      "severity": "must"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Do not expose internal references or system details in confirmation messages.",
+      "category": "security",
+      "severity": "must"
+    },
+    {
+      "text": "Outcome status must be a structured, typed value — not a free-text message — to enable agentic processing.",
+      "category": "integration",
+      "severity": "should"
+    }
+  ],
+  "building_blocks": []
+}

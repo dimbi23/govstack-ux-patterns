@@ -1,0 +1,94 @@
+{
+  "id": "step.service-catalogue",
+  "version": "1.0.0",
+  "kind": "StepPattern",
+  "status": "stable",
+  "label": "Service catalogue",
+  "description": "Provide a consistent, trustworthy way for users to browse, search, and find the right service and understand what to do next. This step often acts as the first point of contact between users and government services.",
+  "source_url": "https://specs.govstack.global/service-patterns/3.-step-patterns/service-catalogue",
+  "tags": ["discovery", "navigation", "catalogue"],
+  "purpose": "Help users locate the correct government service from a structured, official directory.",
+  "use_when": [
+    "A service needs a central entry point for citizens to discover available services.",
+    "Multiple services are available and users need help finding the right one."
+  ],
+  "do_not_use_when": [
+    "The user has already found the service and is ready to start.",
+    "Only a single service is available with no discovery needed."
+  ],
+  "inputs": [
+    {
+      "id": "service.registry",
+      "type": "array",
+      "label": "Service list",
+      "description": "Structured list of available services with name, description, owner, access method, and status.",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "service.selected",
+      "type": "string",
+      "label": "Selected service ID",
+      "description": "The service the user has chosen to access.",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "variants": [
+    {
+      "id": "topic-grouped",
+      "label": "Topic-grouped catalogue",
+      "description": "Services organised by theme, topic, or life event rather than alphabetically.",
+      "use_when": ["Users are more likely to search by life situation than service name."]
+    },
+    {
+      "id": "personalised",
+      "label": "Personalised catalogue",
+      "description": "Catalogue with data-driven recommendations or reminders based on user context.",
+      "use_when": ["User is authenticated and service can surface relevant services proactively."]
+    },
+    {
+      "id": "conversational",
+      "label": "Conversational discovery",
+      "description": "Agent-guided discovery where the user describes their need and the system recommends a service.",
+      "use_when": ["An AI agent or chatbot is mediating service discovery."]
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Structure should reflect how users think, not how the government is organised.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "The catalogue must clearly signal it is an official government source.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Do not assume users will start or complete services online — include offline access indicators.",
+      "applies_to": ["all"],
+      "severity": "should"
+    },
+    {
+      "text": "Services should meet defined standards before being listed.",
+      "applies_to": ["all"],
+      "severity": "should"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "The service registry must be machine-readable to support agentic discovery.",
+      "category": "integration",
+      "severity": "should"
+    },
+    {
+      "text": "Search must support natural language queries, not just exact keyword matching.",
+      "category": "accessibility",
+      "severity": "should"
+    }
+  ],
+  "building_blocks": []
+}

@@ -1,0 +1,108 @@
+{
+  "id": "step.send-a-notification",
+  "version": "1.0.0",
+  "kind": "StepPattern",
+  "status": "stable",
+  "label": "Send a notification",
+  "description": "Send a clear, trustworthy message that informs the user about something that has happened or prompts them to take a next step, without requiring them to stay in the service.",
+  "source_url": "https://specs.govstack.global/service-patterns/3.-step-patterns/send-a-notification",
+  "tags": ["messaging", "notification", "communication"],
+  "purpose": "Keep users informed about service events and prompt action without requiring active session presence.",
+  "use_when": [
+    "To confirm an action or outcome (e.g. booking confirmed, application submitted).",
+    "To remind users about a time-bound event (appointments, deadlines, expiry).",
+    "To notify users of a status change or decision.",
+    "To prompt users to return to the service to continue a task.",
+    "To send authentication or security messages (e.g. OTPs)."
+  ],
+  "do_not_use_when": [
+    "The message itself must be a legal or official document.",
+    "The service requires the user to reply with information — use ask-a-question instead.",
+    "The message would include sensitive personal data."
+  ],
+  "inputs": [
+    {
+      "id": "notification.recipient",
+      "type": "string",
+      "label": "Recipient reference",
+      "description": "User identifier or contact reference for routing the notification.",
+      "required": true,
+      "sensitive": true
+    },
+    {
+      "id": "notification.channel",
+      "type": "enum",
+      "values": ["sms", "email", "app-inbox", "letter", "phone"],
+      "label": "Delivery channel",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "notification.content",
+      "type": "object",
+      "label": "Message content",
+      "description": "Structured message content including subject, body, reference number, and next steps.",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "notification.status",
+      "type": "enum",
+      "values": ["sent", "delivered", "failed", "pending"],
+      "label": "Notification delivery status",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "notification.timestamp",
+      "type": "datetime",
+      "label": "Sent timestamp",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Do not rely on a single channel. Always provide an alternative if the primary channel fails.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Messages must clearly identify the sender (official service name) to prevent fraud.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Respect user contact preferences. Provide opt-in and opt-out choices.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Keep messages short and readable. Avoid images as the only way to convey meaning.",
+      "applies_to": ["all"],
+      "severity": "should"
+    },
+    {
+      "text": "Avoid exposing sensitive information on shared or insecure devices.",
+      "applies_to": ["sms", "email"],
+      "severity": "must"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Notification delivery must be logged with timestamp, channel, status, and recipient reference.",
+      "category": "audit",
+      "severity": "must"
+    },
+    {
+      "text": "Failed notifications must trigger a retry or fallback channel attempt.",
+      "category": "integration",
+      "severity": "should"
+    }
+  ],
+  "building_blocks": [
+    { "id": "bb.messaging", "role": "primary" }
+  ]
+}

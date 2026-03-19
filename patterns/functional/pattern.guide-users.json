@@ -1,0 +1,112 @@
+{
+  "id": "pattern.guide-users",
+  "version": "1.0.0",
+  "kind": "FunctionalPattern",
+  "status": "stable",
+  "label": "Guide users through a service",
+  "description": "Help users navigate a service journey that involves multiple functional patterns. Make progress visible and support smooth transitions between functions.",
+  "source_url": "https://specs.govstack.global/service-patterns/2.-functional-patterns/guide-users-through-a-service",
+  "tags": ["navigation", "multi-step", "orchestration"],
+  "use_when": [
+    "A service includes more than one functional pattern.",
+    "Users may need to complete tasks in a specific order.",
+    "Users may pause and return to the service later.",
+    "The service needs clear review or completion points."
+  ],
+  "do_not_use_when": [
+    "The service consists of a single, simple interaction.",
+    "No progression, review, or re-entry is required.",
+    "The service is purely informational."
+  ],
+  "building_blocks": [],
+  "steps": [
+    {
+      "id": "s1",
+      "label": "Service sheet",
+      "ref": { "id": "step.service-sheet" },
+      "optional": false
+    },
+    {
+      "id": "s2",
+      "label": "Task list (if multiple functions)",
+      "ref": { "id": "step.task-list" },
+      "optional": true
+    },
+    {
+      "id": "s3",
+      "label": "Before you start (if function is complex)",
+      "ref": { "id": "step.before-you-start" },
+      "optional": true
+    },
+    {
+      "id": "s4",
+      "label": "Execute function",
+      "description": "Route user into the relevant functional pattern (authenticate, pay, check eligibility, etc.).",
+      "custom": true,
+      "optional": false
+    },
+    {
+      "id": "s5",
+      "label": "Check answers (if needed)",
+      "ref": { "id": "step.check-answers" },
+      "optional": true
+    },
+    {
+      "id": "s6",
+      "label": "Outcome",
+      "ref": { "id": "step.outcome" },
+      "optional": false
+    }
+  ],
+  "flow": [
+    { "from": "START", "to": "s1" },
+    {
+      "from": "s1", "to": "s2",
+      "condition": { "label": "Service has multiple functions", "expression": "service.has_multiple_functions == true" }
+    },
+    { "from": "s1", "to": "s4" },
+    { "from": "s2", "to": "s4" },
+    {
+      "from": "s4", "to": "s3",
+      "condition": { "label": "Function is complex", "expression": "function.is_complex == true" }
+    },
+    { "from": "s3", "to": "s4" },
+    {
+      "from": "s4", "to": "s2",
+      "condition": { "label": "Return to task list after function", "expression": "service.has_multiple_functions == true and function.completed == true" }
+    },
+    {
+      "from": "s2", "to": "s5",
+      "condition": { "label": "All required functions complete", "expression": "service.all_required_complete == true" }
+    },
+    { "from": "s5", "to": "s6" },
+    { "from": "s4", "to": "s6",
+      "condition": { "label": "Single function service complete", "expression": "service.has_multiple_functions == false" }
+    },
+    { "from": "s6", "to": "END" }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Avoid duplicating orientation at both service and function levels unless needed.",
+      "applies_to": ["all"],
+      "severity": "should"
+    },
+    {
+      "text": "Use structure, not hand-off screens, to connect functions.",
+      "applies_to": ["all"],
+      "severity": "should"
+    },
+    {
+      "text": "Support non-linear progress and return for all multi-function services.",
+      "applies_to": ["all"],
+      "severity": "must"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Task completion state must be persisted to support pause and return across sessions.",
+      "category": "data",
+      "severity": "must"
+    }
+  ]
+}

@@ -1,0 +1,449 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://specs.govstack.global/schemas/service-pattern/v1.0.0",
+  "title": "GovStack Service Pattern Schema",
+  "description": "Machine and AI readable schema for GovStack functional and step service patterns.",
+  "type": "object",
+
+  "$defs": {
+
+    "SemanticVersion": {
+      "type": "string",
+      "description": "Semantic version string following semver.org convention.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+
+    "PatternRef": {
+      "type": "object",
+      "description": "A reference to another pattern by ID, with optional version pin.",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique pattern ID being referenced (e.g. 'step.check-answers')."
+        },
+        "version": {
+          "$ref": "#/$defs/SemanticVersion",
+          "description": "Optional version constraint. If omitted, latest is assumed."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "BuildingBlockRef": {
+      "type": "object",
+      "description": "Reference to a GovStack building block involved in this pattern.",
+      "required": ["id", "role"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Building block identifier.",
+          "examples": [
+            "bb.payment", "bb.identity", "bb.consent", "bb.messaging",
+            "bb.digital-registries", "bb.information-mediator", "bb.scheduler", "bb.workflow"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "enum": ["primary", "supporting", "optional", "conditional"],
+          "description": "Role of this building block within the pattern."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional explanation of how this building block is used in context."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "DataField": {
+      "type": "object",
+      "description": "A typed data field used as input or output of a step or pattern.",
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this field within the pattern (e.g. 'payment.status')."
+        },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["string", "number", "boolean", "date", "datetime", "enum", "object", "array", "file", "credential", "signature"],
+          "description": "Data type of the field."
+        },
+        "values": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowed values when type is 'enum'."
+        },
+        "required": {
+          "type": "boolean",
+          "default": true
+        },
+        "sensitive": {
+          "type": "boolean",
+          "description": "Whether this field contains personal or sensitive data. Impacts display, logging, and sharing rules.",
+          "default": false
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Arbitrary key/value pairs for domain-specific metadata.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "Condition": {
+      "type": "object",
+      "description": "A conditional expression that determines a flow branch.",
+      "required": ["expression"],
+      "properties": {
+        "label": { "type": "string" },
+        "expression": {
+          "type": "string",
+          "description": "A human-readable (and optionally machine-evaluable) condition. E.g. 'payment.status == success'."
+        },
+        "syntax": {
+          "type": "string",
+          "description": "Optional syntax hint for the expression.",
+          "enum": ["natural-language", "jsonlogic", "jexl", "cel", "javascript"],
+          "default": "natural-language"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "FlowEdge": {
+      "type": "object",
+      "description": "A directed edge in the flow graph between two steps.",
+      "required": ["from", "to"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Step ID this edge originates from. Use 'START' for the entry point."
+        },
+        "to": {
+          "type": "string",
+          "description": "Step ID this edge points to. Use 'END' for terminal."
+        },
+        "condition": {
+          "$ref": "#/$defs/Condition",
+          "description": "Optional condition that must be met for this edge to be taken."
+        },
+        "label": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "UXConsideration": {
+      "type": "object",
+      "required": ["text"],
+      "properties": {
+        "text": { "type": "string" },
+        "applies_to": {
+          "type": "array",
+          "description": "Channels or contexts this consideration applies to.",
+          "items": {
+            "type": "string",
+            "enum": ["digital", "assisted", "offline", "mobile", "kiosk", "low-bandwidth", "all"]
+          },
+          "default": ["all"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["must", "should", "may"],
+          "default": "should"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "TechnicalNote": {
+      "type": "object",
+      "required": ["text"],
+      "properties": {
+        "text": { "type": "string" },
+        "category": {
+          "type": "string",
+          "enum": ["security", "performance", "integration", "data", "audit", "accessibility", "general"],
+          "default": "general"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["must", "should", "may"],
+          "default": "should"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "PatternMetadata": {
+      "type": "object",
+      "description": "Common metadata shared by all pattern kinds.",
+      "required": ["id", "version", "kind", "label", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Globally unique pattern identifier. Convention: '<kind-prefix>.<slug>'.",
+          "examples": ["step.check-answers", "pattern.make-a-payment"],
+          "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$"
+        },
+        "version": { "$ref": "#/$defs/SemanticVersion" },
+        "kind": {
+          "type": "string",
+          "enum": ["StepPattern", "FunctionalPattern"],
+          "description": "Discriminator: whether this is a single-step or a full end-to-end pattern."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "review", "stable", "deprecated"],
+          "default": "draft"
+        },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Free-form tags for discoverability.",
+          "examples": [["identity", "payment", "consent"]],
+          "uniqueItems": true
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string" },
+              "org": { "type": "string" },
+              "url": { "type": "string", "format": "uri" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Canonical source URL for this pattern."
+        },
+        "supersedes": {
+          "type": "string",
+          "description": "ID of the pattern this one replaces, if any."
+        },
+        "changelog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["version", "date", "summary"],
+            "properties": {
+              "version": { "$ref": "#/$defs/SemanticVersion" },
+              "date": { "type": "string", "format": "date" },
+              "summary": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Namespace-prefixed custom metadata. Keys should use reverse-domain format (e.g. 'x-myorg.field').",
+          "additionalProperties": true
+        }
+      }
+    },
+
+    "StepPattern": {
+      "description": "A reusable single-screen or single-task interaction pattern.",
+      "allOf": [
+        { "$ref": "#/$defs/PatternMetadata" },
+        {
+          "type": "object",
+          "required": ["purpose"],
+          "properties": {
+            "kind": { "const": "StepPattern" },
+            "purpose": {
+              "type": "string",
+              "description": "What this step achieves from the user's perspective."
+            },
+            "use_when": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Conditions under which this step should be used."
+            },
+            "do_not_use_when": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Conditions under which this step should NOT be used."
+            },
+            "inputs": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/DataField" }
+            },
+            "outputs": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/DataField" }
+            },
+            "variants": {
+              "type": "array",
+              "description": "Named variants of this step for different contexts.",
+              "items": {
+                "type": "object",
+                "required": ["id", "label"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "description": { "type": "string" },
+                  "use_when": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "overrides": {
+                    "type": "object",
+                    "description": "Fields that differ from the base step for this variant.",
+                    "additionalProperties": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "building_blocks": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/BuildingBlockRef" }
+            },
+            "ux_considerations": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/UXConsideration" }
+            },
+            "technical_notes": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/TechnicalNote" }
+            }
+          }
+        }
+      ]
+    },
+
+    "FunctionalPatternStep": {
+      "type": "object",
+      "description": "A step within a functional pattern — either a reference to a StepPattern or a custom inline step.",
+      "required": ["id", "label"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Local step identifier, unique within this functional pattern."
+        },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "ref": {
+          "$ref": "#/$defs/PatternRef",
+          "description": "Reference to a StepPattern. If absent, this is a custom step."
+        },
+        "custom": {
+          "type": "boolean",
+          "description": "Marks this as a service-specific step with no standard pattern reference.",
+          "default": false
+        },
+        "optional": {
+          "type": "boolean",
+          "description": "Whether this step may be skipped depending on context.",
+          "default": false
+        },
+        "channel_constraints": {
+          "type": "array",
+          "description": "Channels where this step applies. Omit to mean all channels.",
+          "items": {
+            "type": "string",
+            "enum": ["digital", "assisted", "offline", "mobile", "kiosk", "all"]
+          }
+        },
+        "inputs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/DataField" }
+        },
+        "outputs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/DataField" }
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "FunctionalPattern": {
+      "description": "An end-to-end service journey pattern composed of multiple steps.",
+      "allOf": [
+        { "$ref": "#/$defs/PatternMetadata" },
+        {
+          "type": "object",
+          "required": ["use_when", "steps", "flow"],
+          "properties": {
+            "kind": { "const": "FunctionalPattern" },
+            "use_when": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1
+            },
+            "do_not_use_when": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "building_blocks": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/BuildingBlockRef" }
+            },
+            "related_patterns": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/PatternRef" }
+            },
+            "steps": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/FunctionalPatternStep" },
+              "minItems": 1
+            },
+            "flow": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/FlowEdge" },
+              "description": "Directed graph edges. Use 'START' and 'END' as terminal node identifiers.",
+              "minItems": 1
+            },
+            "inputs": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/DataField" }
+            },
+            "outputs": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/DataField" }
+            },
+            "ux_considerations": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/UXConsideration" }
+            },
+            "technical_notes": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/TechnicalNote" }
+            }
+          }
+        }
+      ]
+    }
+
+  },
+
+  "oneOf": [
+    { "$ref": "#/$defs/StepPattern" },
+    { "$ref": "#/$defs/FunctionalPattern" }
+  ],
+
+  "discriminator": {
+    "propertyName": "kind",
+    "mapping": {
+      "StepPattern": "#/$defs/StepPattern",
+      "FunctionalPattern": "#/$defs/FunctionalPattern"
+    }
+  }
+}

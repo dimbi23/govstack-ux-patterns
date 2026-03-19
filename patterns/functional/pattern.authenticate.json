@@ -1,0 +1,141 @@
+{
+  "id": "pattern.authenticate",
+  "version": "1.0.0",
+  "kind": "FunctionalPattern",
+  "status": "stable",
+  "label": "Authenticate",
+  "description": "Verify that a user or organisation is who they claim to be, using trusted credentials, before securely granting access to a service.",
+  "source_url": "https://specs.govstack.global/service-patterns/2.-functional-patterns/authenticate",
+  "tags": ["identity", "security", "access"],
+  "use_when": [
+    "Access to a service must be limited to known users or organisations.",
+    "The service handles personal, sensitive, or protected information.",
+    "Actions or content must be linked to a specific user account.",
+    "Legal, policy, or security requirements require identity verification before access."
+  ],
+  "do_not_use_when": [
+    "The service is low-risk and can use one-time access links or token-based access.",
+    "Guest or anonymous access is appropriate.",
+    "Trusted third-party authentication handles the full flow externally."
+  ],
+  "building_blocks": [
+    { "id": "bb.identity", "role": "primary" }
+  ],
+  "outputs": [
+    {
+      "id": "auth.status",
+      "type": "enum",
+      "values": ["success", "failed", "recovered"],
+      "label": "Authentication status",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "auth.user_id",
+      "type": "string",
+      "label": "Authenticated user identifier",
+      "required": false,
+      "sensitive": true
+    },
+    {
+      "id": "auth.session_token",
+      "type": "string",
+      "label": "Session token",
+      "required": false,
+      "sensitive": true
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "label": "Present sign-in options",
+      "custom": true,
+      "description": "Show options: direct credentials (username/password) or external identity provider redirect.",
+      "optional": false
+    },
+    {
+      "id": "s2",
+      "label": "Verify credentials",
+      "custom": true,
+      "description": "Verify credentials using the service's authentication system or trusted external provider. Do not expose service data until verification succeeds.",
+      "optional": false
+    },
+    {
+      "id": "s3-success",
+      "label": "Return outcome: success",
+      "ref": { "id": "step.outcome" },
+      "optional": false,
+      "channel_constraints": ["all"]
+    },
+    {
+      "id": "s3-fail",
+      "label": "Explain failure safely",
+      "ref": { "id": "step.outcome" },
+      "description": "Explain failure in a clear, non-technical manner without exposing sensitive security details.",
+      "optional": false
+    },
+    {
+      "id": "s4",
+      "label": "Support credential recovery",
+      "custom": true,
+      "description": "Provide recovery path for forgotten, expired, or invalid credentials. Support reset or referral to support channels.",
+      "optional": true
+    }
+  ],
+  "flow": [
+    { "from": "START", "to": "s1" },
+    { "from": "s1", "to": "s2" },
+    {
+      "from": "s2", "to": "s3-success",
+      "condition": { "label": "Verification succeeded", "expression": "auth.verification == 'success'" }
+    },
+    {
+      "from": "s2", "to": "s3-fail",
+      "condition": { "label": "Verification failed", "expression": "auth.verification == 'failed'" }
+    },
+    {
+      "from": "s3-fail", "to": "s4",
+      "condition": { "label": "Recovery needed", "expression": "user.needs_recovery == true" }
+    },
+    {
+      "from": "s3-fail", "to": "END",
+      "condition": { "label": "No recovery needed", "expression": "user.needs_recovery == false" }
+    },
+    { "from": "s4", "to": "s1" },
+    { "from": "s3-success", "to": "END" }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Support both individual users and organisations where relevant.",
+      "applies_to": ["all"],
+      "severity": "should"
+    },
+    {
+      "text": "Account for assisted and offline channels that rely on the same authentication rules.",
+      "applies_to": ["all"],
+      "severity": "must"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Authentication mechanisms must use trusted and secure credential stores.",
+      "category": "security",
+      "severity": "must"
+    },
+    {
+      "text": "Integrations with external identity providers must use secure, standard protocols (e.g. OpenID Connect).",
+      "category": "integration",
+      "severity": "must"
+    },
+    {
+      "text": "Authentication outcomes must be logged for audit and security purposes.",
+      "category": "audit",
+      "severity": "must"
+    },
+    {
+      "text": "Session handling must prevent unauthorised reuse or access.",
+      "category": "security",
+      "severity": "must"
+    }
+  ]
+}

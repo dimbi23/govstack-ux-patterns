@@ -1,0 +1,134 @@
+{
+  "id": "pattern.ask-for-consent",
+  "version": "1.0.0",
+  "kind": "FunctionalPattern",
+  "status": "stable",
+  "label": "Ask for consent",
+  "description": "Allow users to control how their personal data is accessed, used, stored, or shared within a service.",
+  "source_url": "https://specs.govstack.global/service-patterns/2.-functional-patterns/ask-for-consent",
+  "tags": ["consent", "privacy", "data"],
+  "use_when": [
+    "The service needs to access a user's personal data from another authority or provider.",
+    "Personal data will be stored, managed, or retained.",
+    "Personal data will be shared with another system or organisation.",
+    "Users need to view, manage, or withdraw previously given consent."
+  ],
+  "do_not_use_when": [
+    "Data processing is required by law for a government task or statutory function.",
+    "Processing is necessary to deliver a service under authority or contract.",
+    "Individuals cannot reasonably be identified from the data."
+  ],
+  "building_blocks": [
+    { "id": "bb.consent", "role": "primary" }
+  ],
+  "inputs": [
+    {
+      "id": "consent.purpose",
+      "type": "string",
+      "label": "Consent purpose",
+      "description": "The specific reason for requesting consent.",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "consent.data_description",
+      "type": "string",
+      "label": "Data description",
+      "description": "What data will be accessed or shared.",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "consent.decision",
+      "type": "enum",
+      "values": ["granted", "refused", "partial"],
+      "label": "Consent decision",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "consent.timestamp",
+      "type": "datetime",
+      "label": "Decision timestamp",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "label": "Present consent request",
+      "ref": { "id": "step.ask-a-question" },
+      "description": "Explain what data will be accessed, why, who receives it, and how long it will be used.",
+      "optional": false
+    },
+    {
+      "id": "s2",
+      "label": "Record consent decision",
+      "custom": true,
+      "description": "Record the user's decision with purpose, scope, and timestamp.",
+      "optional": false
+    },
+    {
+      "id": "s3",
+      "label": "Handle partial or refused consent",
+      "ref": { "id": "step.outcome" },
+      "description": "Explain what will happen if consent is refused or given partially.",
+      "optional": true
+    }
+  ],
+  "flow": [
+    { "from": "START", "to": "s1" },
+    {
+      "from": "s1", "to": "s2",
+      "condition": { "label": "Consent granted or partial", "expression": "consent.decision in ['granted', 'partial']" }
+    },
+    {
+      "from": "s1", "to": "s3",
+      "condition": { "label": "Consent refused", "expression": "consent.decision == 'refused'" }
+    },
+    { "from": "s2", "to": "END" },
+    { "from": "s3", "to": "END" }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Give users a clear, uncoerced choice to accept or refuse consent.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Get separate consent for each distinct purpose.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Allow users to withdraw consent after it has been given.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Enable save-and-return if users need time to understand what they are agreeing to.",
+      "applies_to": ["digital", "mobile"],
+      "severity": "should"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Each consent decision must be linked to a specific purpose, associated data, time-bound where applicable, and recorded with date and version.",
+      "category": "data",
+      "severity": "must"
+    },
+    {
+      "text": "Systems must prevent processing when consent is refused or withdrawn.",
+      "category": "integration",
+      "severity": "must"
+    },
+    {
+      "text": "Consent records must support auditing and compliance reviews.",
+      "category": "audit",
+      "severity": "must"
+    }
+  ]
+}

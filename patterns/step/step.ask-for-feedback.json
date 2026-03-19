@@ -1,0 +1,107 @@
+{
+  "id": "step.ask-for-feedback",
+  "version": "1.0.0",
+  "kind": "StepPattern",
+  "status": "stable",
+  "label": "Ask for feedback",
+  "description": "Enable users to give feedback, report issues, share observations, or suggest service improvements without interrupting their progress.",
+  "source_url": "https://specs.govstack.global/service-patterns/3.-step-patterns/ask-for-feedback",
+  "tags": ["feedback", "quality", "improvement"],
+  "purpose": "Collect user experience data to inform service improvement without interrupting the primary journey.",
+  "use_when": [
+    "At the end of a service journey to collect satisfaction data.",
+    "During a journey to capture in-context observations at specific steps."
+  ],
+  "do_not_use_when": [
+    "Formal research, detailed surveys, or issue resolution is required.",
+    "As a substitute for support, complaints, or help channels."
+  ],
+  "inputs": [
+    {
+      "id": "session.context",
+      "type": "object",
+      "label": "Session context",
+      "description": "Page URL, session ID, and step context for associating feedback.",
+      "required": false,
+      "sensitive": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "feedback.text",
+      "type": "string",
+      "label": "User feedback text",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "feedback.rating",
+      "type": "number",
+      "label": "Satisfaction rating (1-5)",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "feedback.submitted",
+      "type": "boolean",
+      "label": "Feedback submitted",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "variants": [
+    {
+      "id": "end-of-journey",
+      "label": "End-of-journey feedback form",
+      "description": "Full feedback form presented after the outcome step.",
+      "use_when": ["After the user has completed the main service outcome."]
+    },
+    {
+      "id": "inline-prompt",
+      "label": "Inline feedback prompt",
+      "description": "A lightweight prompt triggered during the journey without interrupting progress. Opens in a new tab or modal.",
+      "use_when": ["Feedback is needed at a specific step without disrupting the flow."]
+    },
+    {
+      "id": "satisfaction-rating",
+      "label": "Satisfaction rating",
+      "description": "Simple 1-5 rating or binary satisfied/dissatisfied question at end of journey.",
+      "use_when": ["Quantitative satisfaction data is needed with minimal user effort."]
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Do not interrupt the user's primary journey. Feedback must be optional.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Avoid collecting personal or sensitive information in feedback fields.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Display a success message after submission so the user knows it was received.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Where feedback is collected mid-journey, return the user to the same point after submission.",
+      "applies_to": ["digital", "mobile"],
+      "severity": "must"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Capture page URL and session ID as metadata to associate feedback with specific journey points.",
+      "category": "data",
+      "severity": "should"
+    },
+    {
+      "text": "Feedback data must not contain personal information unless explicitly consented to.",
+      "category": "security",
+      "severity": "must"
+    }
+  ],
+  "building_blocks": []
+}

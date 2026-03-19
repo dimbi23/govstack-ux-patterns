@@ -1,0 +1,113 @@
+{
+  "id": "pattern.check-eligibility",
+  "version": "1.0.0",
+  "kind": "FunctionalPattern",
+  "status": "stable",
+  "label": "Check eligibility",
+  "description": "Check if users qualify for a service without requiring a full application or manual approval. Early eligibility checks reduce user drop-off later in the journey.",
+  "source_url": "https://specs.govstack.global/service-patterns/2.-functional-patterns/check-eligibility",
+  "tags": ["eligibility", "qualification", "screening"],
+  "use_when": [
+    "Eligibility rules exist and not all users will qualify.",
+    "Eligibility can be determined through questions, rules, or trusted data sources.",
+    "Services have multiple eligibility variants with different criteria."
+  ],
+  "do_not_use_when": [
+    "All users are eligible by default.",
+    "Eligibility can only be confirmed after full submission and formal assessment."
+  ],
+  "building_blocks": [
+    { "id": "bb.identity", "role": "conditional", "notes": "Required for automatic eligibility check linking data to the correct user." },
+    { "id": "bb.information-mediator", "role": "conditional", "notes": "Required when eligibility data is retrieved from external trusted sources." },
+    { "id": "bb.consent", "role": "conditional", "notes": "Required when personal data from external sources is accessed." }
+  ],
+  "related_patterns": [
+    { "id": "pattern.authenticate" },
+    { "id": "pattern.ask-for-consent" }
+  ],
+  "outputs": [
+    {
+      "id": "eligibility.status",
+      "type": "enum",
+      "values": ["eligible", "not-eligible", "undetermined", "conditional"],
+      "label": "Eligibility result",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "label": "Explain eligibility requirements",
+      "ref": { "id": "step.before-you-start" },
+      "description": "Tell users what the eligibility check involves and what information may be needed.",
+      "optional": false
+    },
+    {
+      "id": "s2-manual",
+      "label": "Collect eligibility information (manual)",
+      "ref": { "id": "step.ask-a-question" },
+      "description": "Ask structured branching questions to determine eligibility manually.",
+      "optional": true
+    },
+    {
+      "id": "s2-auto",
+      "label": "Automatic eligibility check",
+      "custom": true,
+      "description": "Check eligibility using existing records or integrated data sources. Requires consent.",
+      "optional": true
+    },
+    {
+      "id": "s3",
+      "label": "Review answers",
+      "ref": { "id": "step.check-answers" },
+      "optional": true
+    },
+    {
+      "id": "s4",
+      "label": "Show eligibility outcome",
+      "ref": { "id": "step.outcome" },
+      "description": "Tell users if they are eligible, not eligible, or if eligibility cannot be determined. Explain reason and next steps.",
+      "optional": false
+    }
+  ],
+  "flow": [
+    { "from": "START", "to": "s1" },
+    {
+      "from": "s1", "to": "s2-auto",
+      "condition": { "label": "Automatic check available", "expression": "eligibility.auto_check_available == true" }
+    },
+    {
+      "from": "s1", "to": "s2-manual",
+      "condition": { "label": "Manual check required", "expression": "eligibility.auto_check_available == false" }
+    },
+    { "from": "s2-manual", "to": "s3" },
+    { "from": "s2-auto", "to": "s4" },
+    { "from": "s3", "to": "s4" },
+    { "from": "s4", "to": "END" }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Collect only information needed to reach an eligibility decision.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Make eligibility rules clear and consistent across all channels.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Support partial, conditional, and time-limited eligibility outcomes — avoid forcing a binary yes/no.",
+      "applies_to": ["all"],
+      "severity": "should"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Eligibility rules must produce deterministic outcomes for the same input data.",
+      "category": "data",
+      "severity": "must"
+    }
+  ]
+}

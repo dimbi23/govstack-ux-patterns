@@ -1,0 +1,68 @@
+{
+  "id": "pattern.find-a-service",
+  "version": "1.0.0",
+  "kind": "FunctionalPattern",
+  "status": "stable",
+  "label": "Find a service",
+  "description": "Help users discover and navigate to the right government service through search, browsing, or direct referral.",
+  "source_url": "https://specs.govstack.global/service-patterns/2.-functional-patterns/find-a-service",
+  "tags": ["discovery", "navigation", "entry"],
+  "use_when": [
+    "Users need to locate the correct government service from multiple available services.",
+    "The service has a public-facing catalogue or portal."
+  ],
+  "do_not_use_when": [
+    "The user has arrived directly at a specific service via a direct link or notification.",
+    "Only a single service exists with no discovery needed."
+  ],
+  "building_blocks": [],
+  "steps": [
+    {
+      "id": "s1",
+      "label": "Discover services",
+      "ref": { "id": "step.service-catalogue" },
+      "description": "User browses or searches the catalogue, or arrives via search engine, poster, or referral.",
+      "optional": false
+    },
+    {
+      "id": "s2",
+      "label": "Confirm service relevance",
+      "ref": { "id": "step.service-sheet" },
+      "description": "User reaches the service sheet and confirms they have found the right service.",
+      "optional": false
+    }
+  ],
+  "flow": [
+    { "from": "START", "to": "s1" },
+    { "from": "s1", "to": "s2" },
+    { "from": "s2", "to": "END" }
+  ],
+  "outputs": [
+    {
+      "id": "service.selected",
+      "type": "string",
+      "label": "Selected service ID",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "All discovery routes (search, browse, direct link, kiosk, poster) must lead to the same service sheet.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Discovery should end and the service journey should begin as soon as the user selects a service.",
+      "applies_to": ["all"],
+      "severity": "should"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "The service catalogue must be machine-readable to support agentic service discovery.",
+      "category": "integration",
+      "severity": "should"
+    }
+  ]
+}

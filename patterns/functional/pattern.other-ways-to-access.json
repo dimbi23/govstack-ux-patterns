@@ -1,0 +1,104 @@
+{
+  "id": "pattern.other-ways-to-access",
+  "version": "1.0.0",
+  "kind": "FunctionalPattern",
+  "status": "stable",
+  "label": "Other ways to access a service",
+  "description": "Provide alternative channels for users to access and complete a service when the primary route is not suitable. All channels must lead to the same service outcome.",
+  "source_url": "https://specs.govstack.global/service-patterns/2.-functional-patterns/other-ways-to-access-a-service",
+  "tags": ["inclusion", "multi-channel", "accessibility"],
+  "use_when": [
+    "Not all users can access the primary (often digital) channel.",
+    "Services must support assisted, offline, or in-person access.",
+    "Policy or inclusion requirements mandate alternative routes."
+  ],
+  "do_not_use_when": [
+    "All users can access the primary channel and no inclusion requirements apply."
+  ],
+  "building_blocks": [
+    { "id": "bb.scheduler", "role": "optional", "notes": "For booking in-person appointments." },
+    { "id": "bb.messaging", "role": "optional", "notes": "For sending reference numbers or instructions to the user." }
+  ],
+  "related_patterns": [
+    { "id": "pattern.schedule-an-appointment" }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "label": "Make alternative routes visible",
+      "ref": { "id": "step.service-sheet" },
+      "description": "Alternative routes are presented on the service sheet: phone, in-person, assisted, paper, delegated access.",
+      "optional": false
+    },
+    {
+      "id": "s2",
+      "label": "Explain how alternative access works",
+      "custom": true,
+      "description": "Tell users how to start the alternative route, what information is needed, whether progress carries across channels, and any differences in timing or cost.",
+      "optional": false
+    },
+    {
+      "id": "s3",
+      "label": "Handover into alternative channel",
+      "custom": true,
+      "description": "Support a clean transition: book an appointment, generate a reference number, create an assisted case, or issue instructions.",
+      "optional": true
+    },
+    {
+      "id": "s4",
+      "label": "Outcome",
+      "ref": { "id": "step.outcome" },
+      "optional": false
+    }
+  ],
+  "flow": [
+    { "from": "START", "to": "s1" },
+    { "from": "s1", "to": "s2" },
+    {
+      "from": "s2", "to": "s3",
+      "condition": { "label": "Handover action needed", "expression": "alternative.requires_handover == true" }
+    },
+    { "from": "s2", "to": "s4" },
+    { "from": "s3", "to": "s4" },
+    { "from": "s4", "to": "END" }
+  ],
+  "outputs": [
+    {
+      "id": "alternative.channel_selected",
+      "type": "enum",
+      "values": ["phone", "in-person", "assisted", "paper", "delegated"],
+      "label": "Alternative channel selected",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Alternatives must be discoverable early, not only after digital failure.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Present alternatives as legitimate options, not secondary or last resort.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Alternative routes must not reduce eligibility or service quality.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Staff using assisted routes must follow the same service rules and validations.",
+      "applies_to": ["assisted"],
+      "severity": "must"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Users must not need to repeat information when switching channels. Progress must carry across.",
+      "category": "data",
+      "severity": "should"
+    }
+  ]
+}

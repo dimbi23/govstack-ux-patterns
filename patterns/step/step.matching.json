@@ -1,0 +1,98 @@
+{
+  "id": "step.matching",
+  "version": "1.0.0",
+  "kind": "StepPattern",
+  "status": "stable",
+  "label": "Matching",
+  "description": "Link user-provided information to an existing record so the service can proceed safely and with confidence. Checks whether the right record has been found and defines what to do if it cannot be matched.",
+  "source_url": "https://specs.govstack.global/service-patterns/3.-step-patterns/matching",
+  "tags": ["identity", "record-lookup", "data"],
+  "purpose": "Reliably link a user to an existing record before applying rules, limits, or constraints based on that record.",
+  "use_when": [
+    "A service needs to link a user to an existing record (booking, application, account).",
+    "Rules, limits, or constraints must be applied based on past activity.",
+    "A user needs to view, change, or cancel something that already exists.",
+    "Identity or entitlement must be confirmed before completing an action."
+  ],
+  "do_not_use_when": [
+    "There are no existing records to look up.",
+    "The service is creating something new with no lookup required.",
+    "Identity or record linking does not affect the decision or outcome."
+  ],
+  "inputs": [
+    {
+      "id": "match.query_data",
+      "type": "object",
+      "label": "Matching query data",
+      "description": "Information used to look up the record: reference number, name, date of birth, contact details, or credential.",
+      "required": true,
+      "sensitive": true
+    }
+  ],
+  "outputs": [
+    {
+      "id": "match.status",
+      "type": "enum",
+      "values": ["matched", "no-match", "ambiguous"],
+      "label": "Match result",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "match.record",
+      "type": "object",
+      "label": "Matched record",
+      "description": "The record linked to the user. Only populated when status is 'matched'.",
+      "required": false,
+      "sensitive": true
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Explain why the information is needed and how it will be used before collecting it.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Collect only the minimum information necessary to make a reliable match.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Do not show sensitive record details until a confident match is made.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Always give users a clear next step if matching fails or is uncertain.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Provide alternative ways for users who cannot supply the requested matching information.",
+      "applies_to": ["all"],
+      "severity": "should"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Matching must use deterministic criteria — do not use probabilistic matching without explicit human review of uncertain results.",
+      "category": "data",
+      "severity": "must"
+    },
+    {
+      "text": "All match attempts must be logged with timestamp, query fields (hashed), and outcome.",
+      "category": "audit",
+      "severity": "must"
+    },
+    {
+      "text": "Consent must be obtained before accessing records from external systems.",
+      "category": "data",
+      "severity": "must"
+    }
+  ],
+  "building_blocks": [
+    { "id": "bb.identity", "role": "supporting" },
+    { "id": "bb.information-mediator", "role": "conditional", "notes": "Required when matching against records held in external registries." }
+  ]
+}

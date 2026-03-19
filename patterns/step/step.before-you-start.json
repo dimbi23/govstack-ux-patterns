@@ -1,0 +1,60 @@
+{
+  "id": "step.before-you-start",
+  "version": "1.0.0",
+  "kind": "StepPattern",
+  "status": "stable",
+  "label": "Before you start",
+  "description": "Prepare users before they begin a section of the service. Let them know what they need, how much time is required, and any eligibility conditions that could affect their ability to continue.",
+  "source_url": "https://specs.govstack.global/service-patterns/3.-step-patterns/before-you-start",
+  "tags": ["preparation", "onboarding", "readiness"],
+  "purpose": "Set accurate expectations upfront to reduce abandonment and prevent avoidable errors later in the journey.",
+  "use_when": [
+    "After a service sheet, before the user begins a complex section.",
+    "When new requirements or instructions are introduced mid-journey."
+  ],
+  "do_not_use_when": [
+    "For general introduction, promotional, or marketing content.",
+    "When the content does not help users prepare for the specific journey that follows."
+  ],
+  "inputs": [],
+  "outputs": [
+    {
+      "id": "user.acknowledged",
+      "type": "boolean",
+      "label": "User acknowledged prerequisites",
+      "description": "True when the user has read the preparation content and chosen to proceed.",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "This step must be read-only and must not ask users for information.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Use a clear title such as 'Before you start' so users immediately understand its purpose.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "List required documents or information in plain, specific language, clearly marking anything optional.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Include a single primary action to proceed (e.g. 'Start now' or 'Continue').",
+      "applies_to": ["all"],
+      "severity": "must"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Prerequisites listed here should be machine-readable so agents can verify readiness before initiating a service flow.",
+      "category": "integration",
+      "severity": "should"
+    }
+  ],
+  "building_blocks": []
+}

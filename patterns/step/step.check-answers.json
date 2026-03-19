@@ -1,0 +1,110 @@
+{
+  "id": "step.check-answers",
+  "version": "1.0.0",
+  "kind": "StepPattern",
+  "status": "stable",
+  "label": "Check answers",
+  "description": "Allow the user to review and confirm all collected information before a final, irreversible action.",
+  "source_url": "https://specs.govstack.global/service-patterns/3.-step-patterns/check-answers",
+  "tags": ["review", "confirmation", "ux"],
+
+  "purpose": "Reduce submission errors and give users confidence before committing to an action.",
+
+  "use_when": [
+    "Before any irreversible action (submit, pay, sign, issue credential).",
+    "After collecting multiple pieces of information across several pages."
+  ],
+
+  "do_not_use_when": [
+    "The user has only answered a single question with no side effects.",
+    "The action can be easily undone after submission."
+  ],
+
+  "inputs": [
+    {
+      "id": "collected_data",
+      "type": "object",
+      "label": "All collected data",
+      "description": "All data gathered in prior steps, ready for review.",
+      "required": true,
+      "sensitive": true
+    }
+  ],
+
+  "outputs": [
+    {
+      "id": "confirmed_data",
+      "type": "object",
+      "label": "Confirmed data",
+      "description": "User-confirmed data, ready for final submission.",
+      "required": true,
+      "sensitive": true
+    },
+    {
+      "id": "user_action",
+      "type": "enum",
+      "values": ["confirm", "amend"],
+      "label": "User decision",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+
+  "variants": [
+    {
+      "id": "read-only",
+      "label": "Read-only review",
+      "description": "User can only confirm, not amend inline. Use when all prior steps are accessible via back-navigation.",
+      "use_when": ["Journey supports back-navigation for amendments."]
+    },
+    {
+      "id": "inline-edit",
+      "label": "Inline edit",
+      "description": "User can amend answers directly on the check-answers page without going back.",
+      "use_when": ["Form has few fields and inline editing does not create complexity."]
+    }
+  ],
+
+  "ux_considerations": [
+    {
+      "text": "Allow users to edit any field without losing other answers.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Display data in plain language, not technical field IDs or codes.",
+      "applies_to": ["digital", "assisted"],
+      "severity": "must"
+    },
+    {
+      "text": "Group related fields visually (e.g. personal info, address, payment).",
+      "applies_to": ["digital"],
+      "severity": "should"
+    },
+    {
+      "text": "For assisted or offline channels, read answers back to the user before confirming.",
+      "applies_to": ["assisted", "offline"],
+      "severity": "should"
+    }
+  ],
+
+  "technical_notes": [
+    {
+      "text": "Do not re-validate server-side at this step — perform full validation only on final submission.",
+      "category": "data",
+      "severity": "should"
+    },
+    {
+      "text": "Mask sensitive data where full display is not required (e.g. partial card numbers, partial ID).",
+      "category": "security",
+      "severity": "must"
+    },
+    {
+      "text": "Audit log the confirmation action with timestamp and user reference.",
+      "category": "audit",
+      "severity": "should"
+    }
+  ],
+
+  "building_blocks": []
+}

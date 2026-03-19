@@ -1,0 +1,67 @@
+{
+  "id": "step.service-sheet",
+  "version": "1.0.0",
+  "kind": "StepPattern",
+  "status": "stable",
+  "label": "Service sheet",
+  "description": "Help users check if they are ready to start a service. Users may arrive from a catalogue, chat, search, posters, or referrals.",
+  "source_url": "https://specs.govstack.global/service-patterns/3.-step-patterns/service-sheet",
+  "tags": ["onboarding", "preparation", "entry"],
+  "purpose": "Confirm the user has found the right service and prepare them to start.",
+  "use_when": [
+    "At the start of a service that involves the user inputting information to get something.",
+    "Before an application form or multi-step journey."
+  ],
+  "do_not_use_when": [
+    "The service is purely informational with no user action required.",
+    "The user has already started the service and is mid-journey."
+  ],
+  "inputs": [],
+  "outputs": [
+    {
+      "id": "user.ready_to_start",
+      "type": "boolean",
+      "label": "User confirmed ready to start",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "variants": [
+    {
+      "id": "service-poster",
+      "label": "Service poster (offline)",
+      "description": "A physical or static version used in offline spaces. Much shorter content, no interaction. Must include a clear next step (QR code, URL, phone number, location).",
+      "use_when": ["Service must be accessible in physical locations without internet."]
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Include service name, what will happen, what users will get, and any cost.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Provide a clear call-to-action button to start the service (e.g. 'Start now').",
+      "applies_to": ["digital", "mobile"],
+      "severity": "must"
+    },
+    {
+      "text": "Provide support for users who cannot access online — include phone, text relay, or in-person alternatives.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Include a 'sign in' or 'continue journey' option if the user can resume an existing session.",
+      "applies_to": ["digital", "mobile"],
+      "severity": "should"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Service sheet content should be machine-readable so agents can extract service prerequisites automatically.",
+      "category": "integration",
+      "severity": "should"
+    }
+  ],
+  "building_blocks": []
+}

@@ -1,0 +1,86 @@
+{
+  "id": "step.ask-a-question",
+  "version": "1.0.0",
+  "kind": "StepPattern",
+  "status": "stable",
+  "label": "Ask a question",
+  "description": "Ask questions to collect needed information from users in a clear, minimal, and respectful way.",
+  "source_url": "https://specs.govstack.global/service-patterns/3.-step-patterns/ask-a-question",
+  "tags": ["data-collection", "form", "input"],
+  "purpose": "Collect the minimum information needed from the user to make a decision, complete a transaction, or personalise the service.",
+  "use_when": [
+    "A service needs information directly from the user to make a decision or complete a transaction.",
+    "Information cannot be obtained from integrations or matched from existing systems."
+  ],
+  "do_not_use_when": [
+    "The information is already available from existing government systems or integrations.",
+    "The data can be pre-filled and only needs user confirmation.",
+    "Asking the question does not add value to the service outcome.",
+    "The request is optional or 'nice to have' rather than necessary."
+  ],
+  "inputs": [],
+  "outputs": [
+    {
+      "id": "question.answer",
+      "type": "object",
+      "label": "User answer(s)",
+      "description": "The data provided by the user in response to the question(s).",
+      "required": true,
+      "sensitive": true
+    }
+  ],
+  "variants": [
+    {
+      "id": "question-group",
+      "label": "Question group",
+      "description": "Collect related information together (e.g. contact details) under a shared heading.",
+      "use_when": ["Multiple related fields belong together and grouping aids user understanding."]
+    },
+    {
+      "id": "branching",
+      "label": "Branching question",
+      "description": "Follow-up questions appear only when relevant to prior answers. Users see only the questions they need to answer.",
+      "use_when": ["Answers to some questions determine which questions are shown next."]
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Ask one thing at a time. Ask for information only when truly needed.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Use the correct field type: text, number, date, radio, checkbox, dropdown, or file upload.",
+      "applies_to": ["digital", "mobile"],
+      "severity": "must"
+    },
+    {
+      "text": "Error messages must explain what is wrong and how to fix it.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Mark optional questions explicitly with '(optional)'. Do not use asterisks for mandatory fields.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Enable save and return for complex or sensitive question sets.",
+      "applies_to": ["digital", "mobile"],
+      "severity": "should"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Authentication is required to protect saved answers if save-and-return is enabled.",
+      "category": "security",
+      "severity": "must"
+    },
+    {
+      "text": "Answers must be validated server-side before being accepted as outputs.",
+      "category": "data",
+      "severity": "must"
+    }
+  ],
+  "building_blocks": []
+}

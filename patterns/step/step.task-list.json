@@ -1,0 +1,100 @@
+{
+  "id": "step.task-list",
+  "version": "1.0.0",
+  "kind": "StepPattern",
+  "status": "stable",
+  "label": "Task list",
+  "description": "Help users understand the tasks required to complete a service and track their progress. Supports save-and-return for complex, multi-step services.",
+  "source_url": "https://specs.govstack.global/service-patterns/3.-step-patterns/task-list",
+  "tags": ["progress", "navigation", "multi-step"],
+  "purpose": "Give users visibility of all required tasks and their completion status, enabling pause and return.",
+  "use_when": [
+    "The service involves multiple tasks, steps, or pages.",
+    "Users may need to pause and return later.",
+    "Tasks can be completed in a non-linear order."
+  ],
+  "do_not_use_when": [
+    "The service can be completed in a single short linear flow."
+  ],
+  "inputs": [
+    {
+      "id": "service.task_definitions",
+      "type": "array",
+      "label": "Task definitions",
+      "description": "List of tasks required to complete the service, with labels and ordering.",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "session.task_statuses",
+      "type": "object",
+      "label": "Current task statuses",
+      "description": "Map of task IDs to current status: not-started, in-progress, completed.",
+      "required": false,
+      "sensitive": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "task.selected",
+      "type": "string",
+      "label": "Selected task ID",
+      "description": "The task the user has chosen to start or continue.",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "service.all_required_complete",
+      "type": "boolean",
+      "label": "All required tasks complete",
+      "description": "True when all non-optional tasks are marked completed.",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "ux_considerations": [
+    {
+      "text": "Show a status label for each task (not started, in progress, completed) using both written labels and visual indicators — do not rely on colour alone.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Required tasks must be clearly indicated; optional tasks must be explicitly labelled as optional.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Users should only be blocked from submission if required tasks are incomplete.",
+      "applies_to": ["all"],
+      "severity": "must"
+    },
+    {
+      "text": "Allow users to save progress and return later — restore accurate task statuses on return.",
+      "applies_to": ["digital", "mobile"],
+      "severity": "should"
+    },
+    {
+      "text": "Labels should describe the activity, not reveal personal or sensitive data.",
+      "applies_to": ["all"],
+      "severity": "must"
+    }
+  ],
+  "technical_notes": [
+    {
+      "text": "Task statuses must be persisted server-side, not only in client state.",
+      "category": "data",
+      "severity": "must"
+    },
+    {
+      "text": "Save-and-return must protect partially completed data appropriately.",
+      "category": "security",
+      "severity": "must"
+    },
+    {
+      "text": "Task completion state should be exposed as a structured output to enable agentic orchestration of multi-task services.",
+      "category": "integration",
+      "severity": "should"
+    }
+  ],
+  "building_blocks": []
+}
