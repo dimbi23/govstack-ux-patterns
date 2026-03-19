@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0  
 **Scope:** GovStack UX/UI Building Block — Machine-readable service pattern catalogue  
-**Author:** Dimbinirina Ratofindramanana
+**Author:** Dimbinirina Razafindramanana
 
 ---
 
